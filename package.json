@@ -1,0 +1,27 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "email tracking for precognitive.io",
+  "main": "app.js",
+  "scripts": {
+    "test": "start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryuker16/precognitiveemail.git"
+  },
+  "keywords": [
+    "dummy",
+    "test"
+  ],
+  "author": "will wilkins",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ryuker16/precognitiveemail/issues"
+  },
+  "homepage": "https://github.com/ryuker16/precognitiveemail#readme",
+  "dependencies": {
+    "ava": "^0.22.0",
+    "express": "^4.16.2"
+  }
+}
