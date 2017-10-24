@@ -64,11 +64,12 @@ app.use((req, res, next) => {
                         doc.value.deviceChangedOnReOpen = false;
                     }
                     // This is the part where we would send email but instead log out data
-                    console.log(Object.assign(doc.value, setDetails));
-                    db.close()
-
-                }))
-                next();
+                    let allData = Object.assign(doc.value, setDetails);
+                    console.log(allData);
+                    db.close();
+                    res.send(allData);
+                }));
+             
             }
         });
 
