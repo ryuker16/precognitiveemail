@@ -3,26 +3,33 @@ const nocache = require('nocache');
 const device = require('express-device');
 const mongo = require('mongodb').MongoClient;
 const randomstring = require("randomstring");
+const config = require('config');
 
 const app = express();
-// normally would do environmental variables but was in a hurry and this is a code challenge. 
-const url = '207.181.200.197';
-const localPort = '5100';
-const dbUrl = 'localhost';
-const dbPort = '27017';
-const dbName = 'precog';
- 
+
+// environmental variables loaded via config - set in config/default.json
+const url = config.get('url');
+const localPort = config.get('localPort');
+const dbUrl = config.get('dbUrl');
+const dbPort = config.get('dbPort');
+const dbName = config.get('dbName');
+
+//original device opened
+let originalDevice = '';
+
 // we should be not be caching our image since we want tracking everytime email is opened
 app.use(nocache());
 // capture user device
 app.use(device.capture());
 app.listen(5100);
 
+// our middleware intercepts any request to check if it has 
+// tracking pxl query params and puts relevant device data and tracking code into databae
 app.use((req, res, next) => {
     console.log('request coming through');
     if (req.query.pxl) {
         console.log(req.query.pxl);
-       let setDetails =  {
+        let setDetails = {
             'ip': req.ip,
             'device': req.device.type,
             'timeStamp': new Date()
@@ -35,10 +42,6 @@ app.use((req, res, next) => {
                     "trackingPixel": req.query.pxl
                 }, {
                     $set: setDetails,
-                    $setOnInsert: {
-                        'originalDevice': req.device.type,
-                        'trackingPixel': req.query.pxl,
-                    },
                     $inc: {
                         'count': 1
                     }
@@ -49,15 +52,21 @@ app.use((req, res, next) => {
                     if (err) {
                         console.log(err);
                     }
-                    if (doc.device !== doc.originalDevice) {
+
+                    if (originalDevice === '') {
+                        originalDevice = req.device.type;
+                        doc.value.originalDevice = req.device.type;
+                    }
+
+                    if (originalDevice !== req.device.type) {
                         doc.value.deviceChangedOnReOpen = true;
                     } else {
                         doc.value.deviceChangedOnReOpen = false;
-                    }                    
+                    }
                     // This is the part where we would send email but instead log out data
                     console.log(Object.assign(doc.value, setDetails));
                     db.close()
-                                        
+
                 }))
                 next();
             }
@@ -68,8 +77,10 @@ app.use((req, res, next) => {
     }
 });
 
+// Now host our static directory
 app.use(express.static('./'));
 
+// get tracking code via this path; merely visit the image link to trigger the above middleware
 app.get('/gettracker/:email', (req, res) => {
     if (req.params.email) {
         console.log(req.params.email);

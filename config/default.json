@@ -1,0 +1,7 @@
+{
+ "url" : "207.181.200.197",
+ "localPort" : "5100",
+ "dbUrl" : "localhost",
+ "dbPort" : "27017",
+ "dbName" : "precog"
+}
